@@ -19,12 +19,16 @@ def receive_messages(client, text_area):
             break
 
 # Funzione per inviare messaggi al server
-def send_message(client, entry, client_name):
+def send_message(client, entry, text_area, client_name):
     message = entry.get()
     if message != "":
         formatted_message = f"{client_name}: {message}"
         client.send(formatted_message.encode('utf-8'))
         entry.delete(0, tk.END)
+        text_area.config(state=tk.NORMAL)
+        text_area.insert(tk.END, formatted_message + '\n')
+        text_area.config(state=tk.DISABLED)
+        text_area.yview(tk.END)
 
 # Funzione per configurare la GUI del client
 def start_client_gui():
@@ -38,6 +42,7 @@ def start_client_gui():
     # Creazione della finestra principale
     root = tk.Tk()
     root.title(client_name)
+    root.geometry("400x500")  # Riduzione delle dimensioni della finestra
 
     # Creazione della text area per visualizzare i messaggi
     text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD)
@@ -51,7 +56,7 @@ def start_client_gui():
     entry = tk.Entry(entry_frame)
     entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-    send_button = tk.Button(entry_frame, text="Invia", command=lambda: send_message(client, entry, client_name))
+    send_button = tk.Button(entry_frame, text="Invia", command=lambda: send_message(client, entry, text_area, client_name))
     send_button.pack(side=tk.RIGHT)
 
     # Thread per ricevere messaggi dal server
