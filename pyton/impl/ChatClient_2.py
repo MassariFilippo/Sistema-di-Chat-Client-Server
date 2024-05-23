@@ -1,35 +1,60 @@
 import socket
 import threading
+import tkinter as tk
+from tkinter import scrolledtext
 
-def receive_messages(client):
+# Funzione per ricevere messaggi dal server
+def receive_messages(client, text_area):
     while True:
         try:
             message = client.recv(1024).decode('utf-8')
             if not message:
                 break
-            print(message)
+            text_area.config(state=tk.NORMAL)
+            text_area.insert(tk.END, message + '\n')
+            text_area.config(state=tk.DISABLED)
+            text_area.yview(tk.END)
         except Exception as e:
             print(f"Errore durante la ricezione del messaggio: {e}")
             break
 
-def send_messages(client):
-    while True:
-        try:
-            message = input()
-            client.send(message.encode('utf-8'))
-        except Exception as e:
-            print(f"Errore durante l'invio del messaggio: {e}")
-            break
+# Funzione per inviare messaggi al server
+def send_message(client, entry):
+    message = entry.get()
+    client.send(message.encode('utf-8'))
+    entry.delete(0, tk.END)
 
-def start_client():
+# Funzione per configurare la GUI del client
+def start_client_gui():
+    # Connessione al server
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(('127.0.0.1', 5555))
 
-    receive_thread = threading.Thread(target=receive_messages, args=(client,))
+    # Creazione della finestra principale
+    root = tk.Tk()
+    root.title("Chat Client 2")
+
+    # Creazione della text area per visualizzare i messaggi
+    text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD)
+    text_area.config(state=tk.DISABLED)
+    text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    # Creazione del campo di input per inviare messaggi
+    entry_frame = tk.Frame(root)
+    entry_frame.pack(padx=10, pady=5, fill=tk.X)
+
+    entry = tk.Entry(entry_frame)
+    entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+    send_button = tk.Button(entry_frame, text="Invia", command=lambda: send_message(client, entry))
+    send_button.pack(side=tk.RIGHT)
+
+    # Thread per ricevere messaggi dal server
+    receive_thread = threading.Thread(target=receive_messages, args=(client, text_area))
     receive_thread.start()
 
-    send_thread = threading.Thread(target=send_messages, args=(client,))
-    send_thread.start()
+    # Avvio della GUI
+    root.mainloop()
 
 if __name__ == "__main__":
-    start_client()
+    start_client_gui()

@@ -32,7 +32,7 @@ def start_client_gui():
 
     # Creazione della finestra principale
     root = tk.Tk()
-    root.title("Chat Client 2")
+    root.title("Chat Client 3")
 
     # Creazione della text area per visualizzare i messaggi
     text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD)
